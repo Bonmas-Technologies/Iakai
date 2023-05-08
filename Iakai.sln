@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iakai", "Iakai\Iakai.csproj", "{DDE73E15-A19A-4CF3-9073-99C853573E95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Iakai", "Iakai\Iakai.csproj", "{DDE73E15-A19A-4CF3-9073-99C853573E95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectArray", "OALoader\ObjectArray.csproj", "{7FB663E5-BB33-44C4-82DE-2E3CE29FC807}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{DDE73E15-A19A-4CF3-9073-99C853573E95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDE73E15-A19A-4CF3-9073-99C853573E95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDE73E15-A19A-4CF3-9073-99C853573E95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FB663E5-BB33-44C4-82DE-2E3CE29FC807}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FB663E5-BB33-44C4-82DE-2E3CE29FC807}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FB663E5-BB33-44C4-82DE-2E3CE29FC807}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FB663E5-BB33-44C4-82DE-2E3CE29FC807}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

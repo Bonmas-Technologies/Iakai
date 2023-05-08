@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,16 +8,14 @@ using System.Threading.Tasks;
 
 namespace Iakai.Core
 {
-    internal class ShaderProgram : IDisposable
+    public class ShaderProgram : IDisposable
     {
         public string Log => _logger.ToString();
 
         public bool IsDisposed => _disposed;
 
         private int _handle;
-
         private bool _disposed = false;
-
         private StringBuilder _logger = new StringBuilder();
 
         public ShaderProgram(string vertexPath, string fragmentPath)
@@ -105,6 +104,48 @@ namespace Iakai.Core
         {
             GL.DetachShader(_handle, shaderHandle);
             GL.DeleteShader(shaderHandle);
+        }
+
+        public void SetUniform(string name, int value)
+        {
+            int location = GL.GetUniformLocation(_handle, name);
+
+            GL.Uniform1(location, value);
+        }
+        
+        public void SetUniform(string name, float value)
+        {
+            int location = GL.GetUniformLocation(_handle, name);
+
+            GL.Uniform1(location, value);
+        }
+
+        public void SetUniform(string name, Vector2 value)
+        {
+            int location = GL.GetUniformLocation(_handle, name);
+
+            GL.Uniform2(location, value);
+        }
+
+        public void SetUniform(string name, Vector3 value)
+        {
+            int location = GL.GetUniformLocation(_handle, name);
+
+            GL.Uniform3(location, value);
+        }
+
+        public void SetUniform(string name, Vector4 value)
+        {
+            int location = GL.GetUniformLocation(_handle, name);
+
+            GL.Uniform4(location, value);
+        }
+
+        public void SetUniform(string name, Matrix4 value)
+        {
+            int location = GL.GetUniformLocation(_handle, name);
+
+            GL.UniformMatrix4(location, false, ref value);
         }
 
         public void Dispose()

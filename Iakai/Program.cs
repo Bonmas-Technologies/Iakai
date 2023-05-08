@@ -1,5 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
 namespace Iakai
@@ -9,11 +10,11 @@ namespace Iakai
         static void Main()
         {
             var gameSettings = GameWindowSettings.Default;
+
             var nativeSettings = new NativeWindowSettings()
             {
-                Size = new Vector2i(800, 600),
-                StartVisible = true,
-                StartFocused = true,
+                Title = "Iakai - The Game",
+                Size = new Vector2i(800, 600)
             };
 
             var game = new Game(gameSettings, nativeSettings);
