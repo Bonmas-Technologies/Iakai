@@ -14,7 +14,7 @@ namespace Iakai
 {
     internal class Game : GameWindow
     {
-        private Mesh _mesh;
+        private GLMesh _mesh;
         private ShaderProgram _prog;
         private TextureContainer _tex;
 
@@ -45,7 +45,7 @@ namespace Iakai
 
             GL.ClearColor(0f, 0f, 0f, 0f);
 
-            _mesh = new Mesh();
+            _mesh = new GLMesh();
 
             var meshData = ObjectArray.ObjectArrayLoader.LoadObject(@".\Resources\Objects\obj.oa");
 

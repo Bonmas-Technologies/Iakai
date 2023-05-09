@@ -6,11 +6,11 @@ using System.Xml.Linq;
 
 namespace Iakai.Core
 {
-    internal class Mesh
+    internal class GLMesh
     {
         private int _vao;
 
-        public Mesh()
+        public GLMesh()
         {
             _vao = GL.GenVertexArray();
 
