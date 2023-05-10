@@ -14,6 +14,7 @@ namespace Iakai
             var nativeSettings = new NativeWindowSettings()
             {
                 Title = "Iakai - The Game",
+                //WindowState = WindowState.Fullscreen,
                 Size = new Vector2i(800, 600)
             };
 

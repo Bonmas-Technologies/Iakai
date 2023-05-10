@@ -7,24 +7,28 @@ in vec3 vPos;
 in vec3 vNorm;
 
 uniform sampler2D tex;
-uniform vec3 lightPos;
+uniform float texScale;
+uniform vec3 lightDir;
 
 void main()
 {
-    vec4 colX = texture(tex, vPos.zy * 1f);
-    vec4 colY = texture(tex, vPos.xz * 1f);
-    vec4 colZ = texture(tex, vPos.xy * 1f);
+    vec3 fp = FragPos;
+    vec3 fn = FragNorm;
 
-    vec3 bw = pow(abs(vNorm), vec3(10f));
+    vec4 colX = texture(tex, fp.zy * texScale);
+    vec4 colY = texture(tex, fp.xz * texScale);
+    vec4 colZ = texture(tex, fp.xy * texScale);
+
+    vec3 bw = pow(abs(fn), vec3(2f));
     bw /= dot(bw, vec3(1));
 
     vec4 surfColor = colX * bw.x + colY * bw.y + colZ * bw.z;
 
     vec3 norm = normalize(FragNorm);
-    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 dir  = normalize(-lightDir);
 
-    float diff = max(dot(norm, lightDir), 0.4);
+    float diff = max(dot(norm, dir), 0.4);
 
-    FragColor = vec4(1) * diff* surfColor;
+    FragColor = vec4(1) * diff * surfColor;
 
 }

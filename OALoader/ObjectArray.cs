@@ -3,6 +3,8 @@ using System.IO;
 using System.Text;
 using System.Xml.Linq;
 
+// todo: Добавить описание хранимых данных и используемые аттачменты в gl
+
 namespace ObjectArray
 {
     public static class ObjectArrayLoader

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Reflection;
 using Iakai.Core;
+using Iakai.Generation;
+using ObjectArray;
 using OpenTK;
 using OpenTK.Audio.OpenAL;
 using OpenTK.Graphics.OpenGL;
@@ -14,69 +17,92 @@ namespace Iakai
 {
     internal class Game : GameWindow
     {
-        private GLMesh _mesh;
-        private ShaderProgram _prog;
+        private GLCamera _cam;
+        private GLWorldRenderer _renderer;
         private TextureContainer _tex;
-
-        private Matrix4 proj;
-        private Matrix4 view;
-        private Matrix4 model;
-        private Vector3 ls;
 
         public Game(GameWindowSettings gameSettings, NativeWindowSettings nativeSettings) : base(gameSettings, nativeSettings)
         {
             var size = nativeSettings.Size;
 
-            model = Matrix4.Identity;
-            view = Matrix4.Identity;
-            view *= Matrix4.CreateTranslation(0f, 0f, -5f);
-
-            proj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45f), (float)size.X / size.Y, 0.1f, 100f);
+            _cam = new GLCamera()
+            {
+                AspectRatio = (float)size.X / size.Y,
+                Fov = 80f,
+                Position = new Vector3(0, 1f, 0f),
+            };
         }
 
         protected override void OnLoad()
         {
             base.OnLoad();
+            _renderer = new GLWorldRenderer();
+            _renderer.Init();
+            _renderer.DistanceOfView = 10;
 
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
             GL.FrontFace(FrontFaceDirection.Cw);
-
-            GL.ClearColor(0f, 0f, 0f, 0f);
-
-            _mesh = new GLMesh();
-
-            var meshData = ObjectArray.ObjectArrayLoader.LoadObject(@".\Resources\Objects\obj.oa");
-
-            _mesh.InsertData(meshData.elements, meshData.indices);
-
-            _prog = new ShaderProgram(@".\Resources\Shaders\vertex.vert", @".\Resources\Shaders\fragment.frag");
-            _prog.Use();
-            _prog.SetUniform("tex", 0);
-
-            Console.WriteLine(_prog.Log);
-
-            _tex = new TextureContainer(@".\Resources\Textures\dirt.png", TextureWrapMode.Repeat);
+            GL.ClearColor(0.19f, 0.49f, 0.78f, 0f);
 
             ShaderProgram.UnUse();
+            _tex = new TextureContainer(@".\Resources\Textures\dirt.png", TextureWrapMode.Repeat);
+
         }
-        float acc = 0;
+
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             base.OnUpdateFrame(args);
 
             KeyboardState input = KeyboardState;
+            MouseState mouse = MouseState;
 
-            model *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians((float)args.Time * -40f));
-            acc += (float)args.Time;
-            ls.X = (float)MathHelper.Sin(MathHelper.DegreesToRadians(acc * 400f));
-            ls.Z = 1;
-            ls.Y = 1;
+            _cam.Yaw   += mouse.Delta.X * 0.1f;
+            _cam.Pitch -= mouse.Delta.Y * 0.1f;
 
-            if (input.IsKeyDown(Keys.Escape) | _prog.IsDisposed)
+            float speed = 5f;
+            if (input.IsKeyDown(Keys.LeftShift))
+                speed *= 10f;
+
+            if (input.IsKeyDown(Keys.W))
+                _cam.Position += ((float)args.Time * speed) *  _cam.Front;
+
+            if (input.IsKeyDown(Keys.S))
+                _cam.Position += ((float)args.Time * speed) * -_cam.Front;
+            
+            if (input.IsKeyDown(Keys.A))
+                _cam.Position += ((float)args.Time * speed) * -_cam.Right;
+            
+            if (input.IsKeyDown(Keys.D))
+                _cam.Position += ((float)args.Time * speed) *  _cam.Right;
+            
+            if (input.IsKeyDown(Keys.Space))
+                _cam.Position += ((float)args.Time * speed) *  Vector3.UnitY;
+            
+            if (input.IsKeyDown(Keys.LeftControl))
+                _cam.Position += ((float)args.Time * speed) * -Vector3.UnitY;
+
+            if (input.IsKeyPressed(Keys.F1))
+            {
+                switch (CursorState)
+                {
+                    case CursorState.Normal:
+                        CursorState = CursorState.Grabbed;
+                        break;
+                    case CursorState.Grabbed:
+                        CursorState = CursorState.Normal;
+                        break;
+                }
+            }
+
+            if (input.IsKeyDown(Keys.Escape))
             {
                 Close();
+            }
+            if (input.IsKeyPressed(Keys.Tab))
+            {
+                _renderer.Update(_cam.Position.Xz);
             }
         }
 
@@ -84,23 +110,10 @@ namespace Iakai
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            _prog.Use();
             _tex.Use(TextureUnit.Texture0);
-            _mesh.Use();
 
-            _prog.SetUniform("model", model);
-            _prog.SetUniform("view", view);
-            _prog.SetUniform("projection", proj);
-            _prog.SetUniform("lightPos", ls);
+            _renderer.Render(_cam);
 
-            GL.DrawElements(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, 0);
-
-
-            _prog.SetUniform("model", Matrix4.CreateTranslation(ls));
-            _prog.SetUniform("view", view);
-            _prog.SetUniform("projection", proj);
-            _prog.SetUniform("lightPos", ls);
-            GL.DrawElements(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, 0);
             SwapBuffers();
         }
 
@@ -108,7 +121,8 @@ namespace Iakai
         {
             base.OnResize(e);
 
-            proj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45f), (float)e.Width / e.Height, 0.1f, 100f);
+            _cam.AspectRatio = (float)e.Width / e.Height;
+
             GL.Viewport(0, 0, e.Width, e.Height);
         }
 
