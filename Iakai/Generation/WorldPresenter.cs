@@ -25,7 +25,7 @@ namespace Iakai.Generation
             //TODO: Multithreading
             var chunks = new List<WorldChunkContainer>(CountOfDrawableMeshes);
 
-            List<Vector2i> positions = GetGlobalChunkPositions(cameraPosition / WorldGenerator.ChunkSize, CountOfDrawableMeshes);
+            List<Vector2i> positions = GetGlobalChunkPositions(cameraPosition / (WorldGenerator.ChunkSize * WorldGenerator.MeshScale), CountOfDrawableMeshes);
 
             for (int i = 0; i < positions.Count;)
             {

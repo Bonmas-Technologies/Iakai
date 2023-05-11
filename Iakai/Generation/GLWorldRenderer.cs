@@ -25,7 +25,6 @@ namespace Iakai.Generation
         private WorldPresenter _presenter;
 
         private List<RenderData> data;
-        private int ebo;
 
         public GLWorldRenderer()
         {
@@ -46,8 +45,6 @@ namespace Iakai.Generation
                 var ebo = GL.GenBuffer();
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
                 GL.BufferData(BufferTarget.ElementArrayBuffer, sizeof(uint) * bufferData.Length, bufferData, BufferUsageHint.StaticDraw);
-
-
             }
             GL.BindVertexArray(0);
         }
@@ -55,6 +52,8 @@ namespace Iakai.Generation
         public void Update(Vector2 cameraPosition)
         {
             MeshData[] meshes = LoadMeshes(_presenter.GetReachableChunks(cameraPosition));
+           
+            data.Clear();
 
             GL.BindVertexArray(_vao);
             for (int i = 0; i < meshes.Length; i++)
@@ -100,13 +99,21 @@ namespace Iakai.Generation
 
             for (int i = 0; i < data.Count; i++)
             {
+                _worldRenderer.SetUniform("dirt", 0);
+                _worldRenderer.SetUniform("wall", 1);
                 _worldRenderer.SetUniform("model", data[i].data.offset);
                 _worldRenderer.SetUniform("view", camera.GetViewMatrix());
                 _worldRenderer.SetUniform("projection", camera.GetProjectionMatrix());
-                _worldRenderer.SetUniform("lightDir", new Vector3(-1, -1, 0));
+                _worldRenderer.SetUniform("lightDir", new Vector3(-1, -1f, -1f));
                 _worldRenderer.SetUniform("texScale", 0.2f);
   
                 GL.BindBuffer(BufferTarget.ArrayBuffer, data[i].vbo);
+
+                GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+                GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+
+                GL.EnableVertexAttribArray(0);
+                GL.EnableVertexAttribArray(1);
                 GL.DrawElements(PrimitiveType.Triangles, (WorldGenerator.ChunkSize - 1) * (WorldGenerator.ChunkSize - 1) * 6, DrawElementsType.UnsignedInt,0);
             }
 

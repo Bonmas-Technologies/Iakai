@@ -1,20 +1,28 @@
 ﻿using OpenTK.Mathematics;
 using System;
+using DotnetNoise;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
-using static OpenTK.Graphics.OpenGL.GL;
 
 namespace Iakai.Generation
 {
     public static class WorldGenerator
     {
-        public const int ChunkSize = 64;
+        public const float MeshScale = 2f;
+        public const int ChunkSize = 128;
+        public const float MapScale = 5;
+
+        private static FastNoise noiseGen;
+        
+        static WorldGenerator()
+        {
+            noiseGen = new FastNoise(949);
+
+            noiseGen.Gain = 0.8f;
+            noiseGen.Frequency = 5.5f;
+            noiseGen.Octaves = 4;
+        }
 
         internal static uint[] GenerateIndices()
         {
@@ -74,41 +82,55 @@ namespace Iakai.Generation
         {
             float center = heightMap[x + ChunkSize * z];
 
-            float xTop_yCen = SafeHeightMapGet(x + 1, z, center, heightMap);
-            float xBot_yCen = SafeHeightMapGet(x - 1, z, center, heightMap);
-            float xCen_yTop = SafeHeightMapGet(x, z + 1, center, heightMap);
-            float xCen_yBot = SafeHeightMapGet(x, z - 1, center, heightMap);
-
-            float xTop_yTop = SafeHeightMapGet(x + 1, z + 1, center, heightMap);
-            float xTop_yBot = SafeHeightMapGet(x + 1, z - 1, center, heightMap);
-            float xBot_yTop = SafeHeightMapGet(x - 1, z + 1, center, heightMap);
-            float xBot_yBot = SafeHeightMapGet(x - 1, z - 1, center, heightMap);
-            
             Vector3 normal = Vector3.Zero;
 
-            normal += Vector3.Normalize(new Vector3(center - xTop_yCen, 1, 0));
-            normal += Vector3.Normalize(new Vector3(xBot_yCen - center, 1, 0));
-            normal += Vector3.Normalize(new Vector3(0, 1, center - xCen_yTop));
-            normal += Vector3.Normalize(new Vector3(0, 1, xCen_yBot - center));
+            if (SafeHeightMapGet(x + 1, z, heightMap, out float xTop_yCen))
+                normal += Vector3.Normalize(GetNewVector(center - xTop_yCen, 1, 0));
 
-            normal += Vector3.Normalize(new Vector3(center - xTop_yTop, 1, center - xTop_yTop));
-            normal += Vector3.Normalize(new Vector3(center - xTop_yBot, 1, xTop_yBot - center));
-            normal += Vector3.Normalize(new Vector3(xBot_yTop - center, 1, center - xBot_yTop));
-            normal += Vector3.Normalize(new Vector3(xBot_yBot - center, 1, xBot_yBot - center));
+            if (SafeHeightMapGet(x - 1, z, heightMap, out float xBot_yCen))
+                normal += Vector3.Normalize(GetNewVector(xBot_yCen - center, 1, 0));
 
-            normal /= 8;
+            if (SafeHeightMapGet(x, z + 1, heightMap, out float xCen_yTop))
+                normal += Vector3.Normalize(GetNewVector(0, 1, center - xCen_yTop));
+
+            if (SafeHeightMapGet(x, z - 1, heightMap, out float xCen_yBot))
+                normal += Vector3.Normalize(GetNewVector(0, 1, xCen_yBot - center));
+            
+
+            if (SafeHeightMapGet(x + 1, z + 1, heightMap, out float xTop_yTop))
+                normal += Vector3.Normalize(GetNewVector(center - xTop_yTop, 1, center - xTop_yTop));
+
+            if (SafeHeightMapGet(x - 1, z - 1, heightMap, out float xTop_yBot))
+                normal += Vector3.Normalize(GetNewVector(center - xTop_yBot, 1, xTop_yBot - center));
+
+            if (SafeHeightMapGet(x - 1, z + 1, heightMap, out float xBot_yTop))
+                normal += Vector3.Normalize(GetNewVector(xBot_yTop - center, 1, center - xBot_yTop));
+
+            if (SafeHeightMapGet(x + 1, z - 1, heightMap, out float xBot_yBot))
+                normal += Vector3.Normalize(GetNewVector(xBot_yBot - center, 1, xBot_yBot - center));
+
+            normal.Normalize();
 
             return normal;
         }
 
-        private static float SafeHeightMapGet(int x, int z, float origin, float[] heightMap)
+        private static Vector3 GetNewVector(float x, float y, float z)
         {
-            if (x < 0 || z < 0)
-                return origin;
-            if (x >= ChunkSize || z >= ChunkSize)
-                return origin;
+            return new Vector3(x, y, z);
+        }
 
-            return heightMap[x + ChunkSize * z];
+        private static bool SafeHeightMapGet(int x, int z, float[] heightMap, out float position)
+        {
+            position = 0;
+            
+            if (x < 0 || z < 0)
+                return false;
+
+            if (x >= ChunkSize || z >= ChunkSize)
+                return false;
+
+            position = heightMap[x + ChunkSize * z];
+            return true;
         }
 
         public static WorldLayer GenerateLayerData(Vector2i globalPosition)
@@ -119,13 +141,13 @@ namespace Iakai.Generation
             {
                 for (int x = 0; x < ChunkSize; x++)
                 {
-                    float localX = (float)x / (ChunkSize - 1) + globalPosition.X * (ChunkSize - 1);
-                    float localZ = (float)z / (ChunkSize - 1)+ globalPosition.Y * (ChunkSize - 1);
+                    float worldScale = (ChunkSize - 1);
 
-                    float positonX = localX * MathHelper.TwoPi * 4f + 0.5f;
-                    float positonZ = localZ * MathHelper.TwoPi * 4f;
+                    float localX = x / worldScale - globalPosition.X;
+                    float localZ = z / worldScale - globalPosition.Y;
 
-                    heightMap[x + ChunkSize * z] = ((float)MathHelper.Sin(positonX) + (float)MathHelper.Sin(positonZ)) / 2f * 5f;
+
+                    heightMap[x + ChunkSize * z] = (noiseGen.GetValueFractal(localX / MapScale * 0.2f, localZ / MapScale * 0.2f) * 4 + noiseGen.GetCubicFractal(localX / MapScale * 2, localZ / MapScale * 2) * 6f + noiseGen.GetCellular(localX / MapScale, localZ / MapScale) * 5f);
                 }
             }
 

@@ -19,7 +19,8 @@ namespace Iakai
     {
         private GLCamera _cam;
         private GLWorldRenderer _renderer;
-        private TextureContainer _tex;
+        private TextureContainer _dirt;
+        private TextureContainer _wall;
 
         public Game(GameWindowSettings gameSettings, NativeWindowSettings nativeSettings) : base(gameSettings, nativeSettings)
         {
@@ -38,7 +39,7 @@ namespace Iakai
             base.OnLoad();
             _renderer = new GLWorldRenderer();
             _renderer.Init();
-            _renderer.DistanceOfView = 10;
+            _renderer.DistanceOfView = 5;
 
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
@@ -47,7 +48,10 @@ namespace Iakai
             GL.ClearColor(0.19f, 0.49f, 0.78f, 0f);
 
             ShaderProgram.UnUse();
-            _tex = new TextureContainer(@".\Resources\Textures\dirt.png", TextureWrapMode.Repeat);
+            _dirt = new TextureContainer(@".\Resources\Textures\dirt.png", TextureWrapMode.Repeat);
+            _wall = new TextureContainer(@".\Resources\Textures\wall.png", TextureWrapMode.Repeat);
+
+            _renderer.Update(_cam.Position.Xz);
 
         }
 
@@ -100,6 +104,7 @@ namespace Iakai
             {
                 Close();
             }
+
             if (input.IsKeyPressed(Keys.Tab))
             {
                 _renderer.Update(_cam.Position.Xz);
@@ -110,7 +115,8 @@ namespace Iakai
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            _tex.Use(TextureUnit.Texture0);
+            _dirt.Use(TextureUnit.Texture0);
+            _wall.Use(TextureUnit.Texture1);
 
             _renderer.Render(_cam);
 

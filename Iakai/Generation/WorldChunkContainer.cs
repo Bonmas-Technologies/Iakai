@@ -1,11 +1,10 @@
-﻿using OpenTK.Mathematics;
+﻿using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 
 namespace Iakai.Generation
 {
     public class WorldChunkContainer
     {
-        public const int LodChangeDistance = 2;
-        
         private Vector2i _globalPosition;
 
         private MeshData? _mesh;
@@ -30,7 +29,7 @@ namespace Iakai.Generation
 
         private Matrix4 GetOffsetMatrix()
         {
-            return Matrix4.Identity * Matrix4.CreateTranslation(_globalPosition.X * (WorldGenerator.ChunkSize - 1), 0, _globalPosition.Y * (WorldGenerator.ChunkSize - 1));
+            return Matrix4.Identity * Matrix4.CreateTranslation(_globalPosition.X * (WorldGenerator.ChunkSize - 1), 0, _globalPosition.Y * (WorldGenerator.ChunkSize - 1)) * Matrix4.CreateScale(WorldGenerator.MeshScale);
         }
     }
 
