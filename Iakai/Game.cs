@@ -105,7 +105,7 @@ namespace Iakai
                 Close();
             }
 
-            if (input.IsKeyPressed(Keys.Tab))
+            //if (input.IsKeyPressed(Keys.Tab))
             {
                 _renderer.Update(_cam.Position.Xz);
             }

@@ -2,11 +2,6 @@
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Iakai.Generation
 {
@@ -24,11 +19,11 @@ namespace Iakai.Generation
 
         private WorldPresenter _presenter;
 
-        private List<RenderData> data;
+        private List<RenderContainer> data;
 
         public GLWorldRenderer()
         {
-            data = new List<RenderData>();
+            data = new List<RenderContainer>();
             _presenter = new WorldPresenter();
             _worldRenderer = new ShaderProgram(@".\Resources\Shaders\vertex.vert", @".\Resources\Shaders\fragment.frag");
             Console.WriteLine(_worldRenderer.Log);
@@ -52,7 +47,10 @@ namespace Iakai.Generation
         public void Update(Vector2 cameraPosition)
         {
             MeshData[] meshes = LoadMeshes(_presenter.GetReachableChunks(cameraPosition));
-           
+
+            foreach (var ro in data)
+                GL.DeleteBuffer(ro.vbo);
+            
             data.Clear();
 
             GL.BindVertexArray(_vao);
@@ -72,7 +70,7 @@ namespace Iakai.Generation
                 GL.EnableVertexAttribArray(0);
                 GL.EnableVertexAttribArray(1);
 
-                data.Add(new RenderData() 
+                data.Add(new RenderContainer() 
                 {
                     data = meshes[i],
                     vbo = vbo
@@ -118,12 +116,6 @@ namespace Iakai.Generation
             }
 
             GL.BindVertexArray(0);
-        }
-
-        private struct RenderData
-        {
-            public int vbo;
-            public MeshData data;
         }
     }
 }

@@ -9,8 +9,8 @@ namespace Iakai.Generation
 {
     public static class WorldGenerator
     {
-        public const float MeshScale = 2f;
-        public const int ChunkSize = 128;
+        public const float MeshScale = 4f;
+        public const int ChunkSize = 32;
         public const float MapScale = 5;
 
         private static FastNoise noiseGen;
@@ -82,32 +82,27 @@ namespace Iakai.Generation
         {
             float center = heightMap[x + ChunkSize * z];
 
-            Vector3 normal = Vector3.Zero;
+            Vector3 normal = Vector3.UnitY;
 
             if (SafeHeightMapGet(x + 1, z, heightMap, out float xTop_yCen))
-                normal += Vector3.Normalize(GetNewVector(center - xTop_yCen, 1, 0));
+                normal += GetNewVector(center - xTop_yCen, 1, 0);
 
-            if (SafeHeightMapGet(x - 1, z, heightMap, out float xBot_yCen))
-                normal += Vector3.Normalize(GetNewVector(xBot_yCen - center, 1, 0));
+            else if (SafeHeightMapGet(x - 1, z, heightMap, out float xBot_yCen))
+                normal += GetNewVector(xBot_yCen - center, 1, 0);
 
             if (SafeHeightMapGet(x, z + 1, heightMap, out float xCen_yTop))
-                normal += Vector3.Normalize(GetNewVector(0, 1, center - xCen_yTop));
-
-            if (SafeHeightMapGet(x, z - 1, heightMap, out float xCen_yBot))
-                normal += Vector3.Normalize(GetNewVector(0, 1, xCen_yBot - center));
-            
-
-            if (SafeHeightMapGet(x + 1, z + 1, heightMap, out float xTop_yTop))
-                normal += Vector3.Normalize(GetNewVector(center - xTop_yTop, 1, center - xTop_yTop));
-
-            if (SafeHeightMapGet(x - 1, z - 1, heightMap, out float xTop_yBot))
-                normal += Vector3.Normalize(GetNewVector(center - xTop_yBot, 1, xTop_yBot - center));
+                normal += GetNewVector(0, 1, center - xCen_yTop);
+            else if (SafeHeightMapGet(x, z - 1, heightMap, out float xCen_yBot))
+                normal += GetNewVector(0, 1, xCen_yBot - center);
 
             if (SafeHeightMapGet(x - 1, z + 1, heightMap, out float xBot_yTop))
-                normal += Vector3.Normalize(GetNewVector(xBot_yTop - center, 1, center - xBot_yTop));
-
-            if (SafeHeightMapGet(x + 1, z - 1, heightMap, out float xBot_yBot))
-                normal += Vector3.Normalize(GetNewVector(xBot_yBot - center, 1, xBot_yBot - center));
+                normal += GetNewVector(xBot_yTop - center, 1, center - xBot_yTop);
+            else if (SafeHeightMapGet(x + 1, z - 1, heightMap, out float xBot_yBot))
+                normal += GetNewVector(xBot_yBot - center, 1, xBot_yBot - center);
+            else if (SafeHeightMapGet(x - 1, z - 1, heightMap, out float xTop_yBot))
+                normal += GetNewVector(center - xTop_yBot, 1, xTop_yBot - center);
+            else if (SafeHeightMapGet(x + 1, z + 1, heightMap, out float xTop_yTop))
+                normal += GetNewVector(center - xTop_yTop, 1, center - xTop_yTop);
 
             normal.Normalize();
 
